@@ -39,6 +39,9 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
 
     [Field(Name = "Pulsetime (seconds)")]
     public int Pulsetime { get; set; } = 40;
+
+    [Field(Name = "Max Event Rate (seconds)")]
+    public int MaxEventRate { get; set; } = 1;
       
     [JsonIgnore]
     public bool IsChanged { get; set; }

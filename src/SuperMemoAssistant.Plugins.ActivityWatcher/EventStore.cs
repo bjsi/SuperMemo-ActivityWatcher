@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace SuperMemoAssistant.Plugins.ActivityWatcher
 {
-  public class EventStore : ConcurrentDictionary<DateTime, SMEvent>
+
+  public class EventStore : SortedDictionary<DateTime, SMEvent>
   {
     private ActivityWatcherService AWService { get; set; }
     private ActivityWatcherCfg Config => Svc<ActivityWatcherPlugin>.Plugin.Config;
@@ -26,76 +27,62 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
 
       var now = DateTime.UtcNow;
 
-      if (IsEmpty)
+      if (!this.Any())
       {
-        TryAdd(now, Event);
+        Add(now, Event);
         return;
       }
 
-      var orderedEvents = this.OrderBy(x => x.Key);
-      var lastEvent = orderedEvents.Last();
+      var lastElement = this.Values.Last();
+      var lastTimestamp = this.Keys.Last();
 
-      if ((lastEvent.Value.element.Id != Event.element.Id)
-        || (now - lastEvent.Key).TotalSeconds > Config.Pulsetime)
+      // NRE here
+      if ((lastElement.element.Id != Event.element.Id)
+        || (now - lastTimestamp).TotalSeconds > Config.Pulsetime)
       {
         // Send Backlog
-        await CombineAndSend(orderedEvents);
+        await CombineAndSend();
         // New Store with new event
         Clear();
       }
-      TryAdd(now, Event);
+      Add(now, Event);
     }
 
-    public async Task CombineAndSend(IOrderedEnumerable<KeyValuePair<DateTime, SMEvent>> events)
+    public async Task CombineAndSend()
     {
-      if (events == null || events.Count() < 2)
+      if (this == null || this.Count < 2)
         return;
 
-      if (!CheckIsValid(events)) 
+      if (!CheckIsValid())
       {
-        var list = this.OrderBy(x => x.Key).ToList();
+        Clear();
         LogTo.Error($"Failed to send the event backlog");
       }
 
-      var firstEvent = events.First();
-      var lastEvent = events.Last();
+      var firstEvent = this.First();
+      var lastEvent = this.Last();
 
       IElement firstElement = firstEvent.Value.element;
       IElement lastElement = lastEvent.Value.element;
-
-
-      var x = firstElement.Deleted;
-      var x1 = firstElement.ChildrenCount;
-
-      var y = lastElement.Deleted;
-      var y2 = lastElement.ChildrenCount;
-
-      var template = Svc.SM.Registry.Template[5];
-      var t = template.Name;
-
       DateTime start = firstEvent.Key;
       DateTime end = lastEvent.Key;
-
-
-      string initialContent = firstEvent.Value.content
-                                              .GetHtmlInnerText();
-      string finalContent = lastEvent.Value.content
-                                           .GetHtmlInnerText();
-
+      int childrenDelta = lastEvent.Value.ChildrenCount - firstEvent.Value.ChildrenCount;
+      string initialContent = firstEvent.Value.content.GetHtmlInnerText();
+      string finalContent = lastEvent.Value.content.GetHtmlInnerText();
       string diff = DiffEx.CreateDiffList(initialContent, finalContent).Jsonify();
 
-      var awEvent = new AWEvent(firstElement, start, end, diff);
+      var awEvent = new AWEvent(lastElement, start, end, diff, childrenDelta);
       await AWService.SendEvent(awEvent);
     }
 
-    public bool CheckIsValid(IOrderedEnumerable<KeyValuePair<DateTime, SMEvent>> events)
+    public bool CheckIsValid()
     {
-      if (events == null || events.Count() == 0)
+      if (this == null || !this.Any())
         return false;
 
       bool ret = true;
 
-      var pairwiseEvents = events.Zip(events.Skip(1), (a, b) => Tuple.Create(a, b));
+      var pairwiseEvents = this.Zip(this.Skip(1), (a, b) => Tuple.Create(a, b));
 
       foreach (var eventPair in pairwiseEvents)
       {

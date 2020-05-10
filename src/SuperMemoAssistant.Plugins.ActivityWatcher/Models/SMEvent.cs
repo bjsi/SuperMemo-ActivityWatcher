@@ -19,6 +19,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
   public class SMEvent
   {
     public IElement element { get; set; }
+    public int ChildrenCount { get; set; }
     public string content { get; set; }
     public EventOrigin eventOrigin { get; set; }
 
@@ -26,6 +27,8 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     {
       this.element = element;
       this.content = content;
+      this.ChildrenCount = element.ChildrenCount;
+      this.eventOrigin = eventOrigin;
     }
 
     public bool IsValid()

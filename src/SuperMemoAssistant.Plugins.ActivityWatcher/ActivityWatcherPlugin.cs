@@ -67,7 +67,6 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     private ActivityWatcherService AWService { get; set; }
     private EventStore eventStore { get; set; }
     private MouseMoveHook mouseMoveHook { get; set; }
-
     private SemaphoreSlim semSlim { get; set; } = new SemaphoreSlim(1, 1);
     private DateTime lastMouseEvent { get; set; } = DateTime.UtcNow;
     private DateTime lastKeyboardEvent { get; set; } = DateTime.UtcNow;
@@ -92,15 +91,12 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
       AWService = new ActivityWatcherService();
       eventStore = new EventStore(AWService);
       this.mouseMoveHook = new MouseMoveHook();
-
       await this.AWService.CreateBucket();
 
       // TODO: Switch to KeyboardPressed Event when available
-      // This only captures ctrl, alt, shift, etc.
       Svc.KeyboardHotKey.MainCallback += new Action<HotKey>(OnKeyboardInput);
 
       Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedEventArgs>(ElementWdw_OnElementChanged);
-
     }
 
     protected override void Dispose(bool disposing)
@@ -115,7 +111,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
 
     private async Task SendOldElementEvent(IElement e)
     {
-      // Waits indefinitely
+      // Waits indefinitely because we always want to send the old element event
       await semSlim.WaitAsync();
       try
       {
@@ -135,7 +131,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
 
     private async Task SendNewElementEvent(IElement e, string content)
     {
-      // Waits indefinitely
+      // Waits indefinitely because we always want to send the new element event
       await semSlim.WaitAsync();
       try
       {
@@ -173,9 +169,11 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
 
     private async void MouseMoveHook_Move(object sender, MouseHookEventArgs e)
     {
-      if ((DateTime.UtcNow - lastMouseEvent).TotalSeconds > 1)
+
+      if ((DateTime.UtcNow - lastMouseEvent).TotalSeconds > Config.MaxEventRate)
       {
 
+        // Returns immediately if semaphore is already taken
         if (!await semSlim.WaitAsync(0))
           return;
 
@@ -197,7 +195,9 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
 
     private async void OnKeyboardInput(HotKey h)
     {
-      if ((DateTime.UtcNow - lastKeyboardEvent).TotalSeconds > 1)
+
+      // Returns immediately if semaphore is already taken
+      if ((DateTime.UtcNow - lastKeyboardEvent).TotalSeconds > Config.MaxEventRate)
       {
 
         if (!await semSlim.WaitAsync(0))

@@ -20,7 +20,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     public double duration { get; set; }
     public AWData data { get; set; }
 
-    public AWEvent(IElement element, DateTime start, DateTime end, string diffedContent)
+    public AWEvent(IElement element, DateTime start, DateTime end, string diffedContent, int childrenDelta)
     {
 
       if (start > end)
@@ -34,7 +34,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
 
       duration = (end - start).TotalSeconds;
       timestamp = start;
-      data = new AWData(element, diffedContent);
+      data = new AWData(element, diffedContent, childrenDelta);
     }
   }
 
@@ -49,17 +49,20 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     public int concept_id { get; set; }
     public string concept_name { get; set; }
     public string element_type { get; set; }
-    public bool is_deleted { get; set; }  
     public List<string> full_path { get; set; }
     public List<string> category_path { get; set; }
     public string element_content { get; set; }
+    public bool deleted { get; set; }
+    public int children_delta { get; set; }
 
+    // TODO: add template and multiple html content components
     // TODO: add element_status
     // TODO: add element_priority
     // TODO: add whether extracts were created / how many
+    // --> Currently only indirectly tracked via children
     // TODO: add whether a grade was given to an item
 
-    public AWData(IElement element, string content)
+    public AWData(IElement element, string content, int childrenDelta)
     {
       this.element_id = element.Id;
       this.element_title = string.IsNullOrEmpty(element.Title) ? "None" : element.Title;
@@ -67,11 +70,12 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
       this.concept_id = element.Concept == null ? -1 : element.Concept.Id;
       this.concept_name = element.Concept == null ? "None" : element.Concept.Name;
       this.element_type = ((ElementType)element.Type).ToString();
-      this.is_deleted = element.Deleted;
       this.collection_name = Svc.SM.Collection.Name;
       this.category_path = this.GetCategoryPath(element);
       this.full_path = this.GetFullPath(element);
       this.element_content = content;
+      this.deleted = element.Deleted;
+      this.children_delta = childrenDelta;
     }
 
     private List<string> GetCategoryPath(IElement element)
