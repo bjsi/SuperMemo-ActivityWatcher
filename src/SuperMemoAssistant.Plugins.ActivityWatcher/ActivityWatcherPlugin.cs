@@ -106,7 +106,11 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     protected override void Dispose(bool disposing)
     {
       base.Dispose(disposing);
-      if (mouseMoveHook)
+      if (mouseMoveHook == null)
+        return;
+      if (!mouseMoveHook.IsActive)
+        return;
+      mouseMoveHook.Dispose();
     }
 
     private async Task SendOldElementEvent(IElement e)

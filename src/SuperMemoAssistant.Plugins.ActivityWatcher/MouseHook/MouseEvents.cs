@@ -24,16 +24,11 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     {
       _callback = MouseHookCallback;
       _hookId = Natives.SetWindowsHook(HookType.WH_MOUSE_LL, _callback);
-
-      // Disable the hook when SMA is shutdown
-      //Svc.App.Dispatcher.ShutdownStarted += Dispatcher_ShutdownStarted;
     }
 
     ~MouseMoveHook()
-
-    private void Dispatcher_ShutdownStarted(object sender, EventArgs e)
     {
-      this.Dispose();
+      Dispose();
     }
 
     /// <summary>
