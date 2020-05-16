@@ -29,7 +29,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     public string Host { get; set; } = "localhost";
 
     [Field(Name = "Port")]
-    public int Port { get; set; } = 5666;
+    public int Port { get; set; } = 5600;
 
     [Field(Name = "Activity Watch Bucket Name")]
     public string BucketName { get; set; } = "aw-watcher-supermemo";

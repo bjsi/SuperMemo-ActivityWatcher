@@ -99,6 +99,11 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
       Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedEventArgs>(ElementWdw_OnElementChanged);
     }
 
+    //~ActivityWatcherPlugin()
+    //{
+    //  Dispose(false);
+    //}
+
     protected override void Dispose(bool disposing)
     {
       base.Dispose(disposing);
@@ -115,6 +120,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
       await semSlim.WaitAsync();
       try
       {
+        // TODO: Change this
         var last = eventStore.OrderBy(x => x.Key).LastOrDefault().Value;
         if (last != null
           && (last.element.Id == e.Id))

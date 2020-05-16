@@ -13,6 +13,19 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
 {
 
   [Serializable]
+  public class PathEntry
+  {
+    public string element_title { get; set; }
+    public int element_id { get; set; }
+
+    public PathEntry(IElement element)
+    {
+      this.element_id = element.Id;
+      this.element_title = element.Title;
+    }
+  }
+
+  [Serializable]
   public class AWEvent
   {
 
@@ -49,8 +62,8 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     public int concept_id { get; set; }
     public string concept_name { get; set; }
     public string element_type { get; set; }
-    public List<string> full_path { get; set; }
-    public List<string> category_path { get; set; }
+    public List<PathEntry> full_path { get; set; }
+    public List<PathEntry> category_path { get; set; }
     public string element_content { get; set; }
     public bool deleted { get; set; }
     public int children_delta { get; set; }
@@ -78,30 +91,30 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
       this.children_delta = childrenDelta;
     }
 
-    private List<string> GetCategoryPath(IElement element)
+    private List<PathEntry> GetCategoryPath(IElement element)
     {
-      List<string> titles = new List<string>();
+      var fullPath = new List<PathEntry>();
       var cur = element.Parent;
       while (cur != null)
       {
         if (cur.Type == ElementType.ConceptGroup)
-          titles.Add(cur.Title);
+          fullPath.Add(new PathEntry(cur));
         cur = cur.Parent;
       }
-      return titles;
+      return fullPath;
     }
 
 
-    private List<string> GetFullPath(IElement element)
+    private List<PathEntry> GetFullPath(IElement element)
     {
-      List<string> titles = new List<string>();
+      var fullPath = new List<PathEntry>();
       var cur = element.Parent;
       while (cur != null)
       {
-        titles.Add(cur.Title);
+        fullPath.Add(new PathEntry(cur));
         cur = cur.Parent;
       }
-      return titles;
+      return fullPath;
     }
   }
 }
