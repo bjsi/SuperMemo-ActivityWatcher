@@ -36,7 +36,6 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
       var lastElement = this.Values.Last();
       var lastTimestamp = this.Keys.Last();
 
-      // NRE here
       if ((lastElement.element.Id != Event.element.Id)
         || (now - lastTimestamp).TotalSeconds > Config.Pulsetime)
       {
@@ -45,7 +44,12 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
         // New Store with new event
         Clear();
       }
-      Add(now, Event);
+
+      SMEvent _;
+      if (!this.TryGetValue(now, _)
+      {
+        Add(now, Event);
+      }
     }
 
     public async Task CombineAndSend()

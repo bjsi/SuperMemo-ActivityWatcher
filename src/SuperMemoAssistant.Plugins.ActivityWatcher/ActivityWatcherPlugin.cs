@@ -38,11 +38,13 @@ using SuperMemoAssistant.Sys.IO.Devices;
 using SuperMemoAssistant.Services.UI.Configuration;
 using SuperMemoAssistant.Services.IO.HotKeys;
 using SuperMemoAssistant.Sys.Remoting;
+using HtmlAgilityPack;
 using System.Threading;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
+using mshtml;
 
 namespace SuperMemoAssistant.Plugins.ActivityWatcher
 {
@@ -230,6 +232,29 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
       string ret = string.Empty;
       var htmlCtrl = Svc.SM.UI.ElementWdw.ControlGroup.GetFirstHtmlControl();
       var html = htmlCtrl?.AsHtml();
+      var htmlDoc = html?.GetDocument();
+      var body = htmlDoc?.body;
+      if (body != null)
+      {
+        //var scrollStartPoint = ((IHTMLElement2)body).scrollTop;
+        //var totalScrollHeight = ((IHTMLElement2)body).scrollHeight;
+        //var startPercent = ((double)scrollStartPoint / totalScrollHeight);
+        
+        //// Assuming font size of 20
+        //var compHeight = body.offsetHeight; // 25
+        //var compWidth = body.offsetWidth;
+
+        //// TODO: Calculate these more precisely
+        //var charsPerLine = ((int)compWidth / 6);
+        //var lines = ((int)compHeight / 20);
+        //var numberOfChars = charsPerLine * lines;
+
+        //var doc = new HtmlAgilityPack.HtmlDocument();
+        //doc.LoadHtml(html.Text);
+        //string outer = doc.DocumentNode.InnerText;
+
+      }
+
       if (html != null)
         ret = html.Text;
       return ret;
