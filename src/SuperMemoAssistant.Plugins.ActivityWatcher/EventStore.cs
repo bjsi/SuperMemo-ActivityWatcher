@@ -46,7 +46,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
       }
 
       SMEvent _;
-      if (!this.TryGetValue(now, _)
+      if (!this.TryGetValue(now, out _))
       {
         Add(now, Event);
       }
