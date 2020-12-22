@@ -12,8 +12,7 @@ using System.Threading.Tasks;
 /// </summary>
 namespace SuperMemoAssistant.Plugins.ActivityWatcher
 {
-
-  public class MouseMoveHook
+  public class MouseMoveHook : IDisposable
   {
     private readonly Natives.LowLevelProc _callback;
     private IntPtr _hookId;
@@ -24,11 +23,12 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     {
       _callback = MouseHookCallback;
       _hookId = Natives.SetWindowsHook(HookType.WH_MOUSE_LL, _callback);
+      IsActive = true;
     }
 
     ~MouseMoveHook()
     {
-      Dispose();
+      Disable();
     }
 
     /// <summary>

@@ -72,6 +72,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     private SemaphoreSlim semSlim { get; set; } = new SemaphoreSlim(1, 1);
     private DateTime lastMouseEvent { get; set; } = DateTime.UtcNow;
     private DateTime lastKeyboardEvent { get; set; } = DateTime.UtcNow;
+    private OnHtmlDocChanged onHtmlDocChanged { get; set; } = new OnHtmlDocChanged();
 
 
     public override bool HasSettings => true;
@@ -106,15 +107,6 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
     //  Dispose(false);
     //}
 
-    protected override void Dispose(bool disposing)
-    {
-      base.Dispose(disposing);
-      if (mouseMoveHook == null)
-        return;
-      if (!mouseMoveHook.IsActive)
-        return;
-      mouseMoveHook.Dispose();
-    }
 
     private async Task SendOldElementEvent(IElement e)
     {
@@ -173,6 +165,7 @@ namespace SuperMemoAssistant.Plugins.ActivityWatcher
         mouseMoveHook.Move += MouseMoveHook_Move;
         mouseMoveHook.IsActive = true;
       }
+
     }
 
     private async void MouseMoveHook_Move(object sender, MouseHookEventArgs e)
